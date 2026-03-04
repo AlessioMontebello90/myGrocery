@@ -12,6 +12,9 @@ struct AddItemView: View {
     @State private var selectedCategory: Category = .altro
     @State private var pricePerUnit: Double = 0
     
+    @State private var showScanner = false
+    @State private var scannedCode: String?
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -35,19 +38,37 @@ struct AddItemView: View {
             .navigationTitle("Nuovo Prodotto")
             .navigationBarTitleDisplayMode(.inline)
         }
+        .sheet(isPresented: $showScanner) {
+            BarcodeScannerView { code in
+                scannedCode = code
+                name = code // per ora usiamo il codice come nome
+                showScanner = false
+            }
+        }
     }
     
     // MARK: - Sezioni
     
     private var productSection: some View {
         VStack(alignment: .leading, spacing: 8) {
+            
             Text("Prodotto")
                 .font(.caption)
                 .foregroundColor(.secondary)
             
-            TextField("Nome prodotto", text: $name)
-                .padding()
-                .background(cardBackground)
+            HStack {
+                TextField("Nome prodotto", text: $name)
+                
+                Button {
+                    showScanner = true
+                } label: {
+                    Image(systemName: "barcode.viewfinder")
+                        .font(.title3)
+                        .foregroundColor(.green)
+                }
+            }
+            .padding()
+            .background(cardBackground)
         }
     }
     
