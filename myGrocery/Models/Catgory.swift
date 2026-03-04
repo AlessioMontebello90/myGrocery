@@ -1,17 +1,29 @@
-import Foundation
+import SwiftUI
 
-enum Category: String, CaseIterable, Identifiable {
-    case ortofrutta = "Ortofrutta"
-    case carnePesce = "Carne & Pesce"
+enum Category: String, CaseIterable, Identifiable, Codable {
+    case frutta = "Frutta"
+    case verdura = "Verdura"
+    case carne = "Carne"
+    case pesce = "Pesce"
     case latticini = "Latticini"
-    case dispensa = "Dispensa"
-    case surgelati = "Surgelati"
     case bevande = "Bevande"
-    case snackDolci = "Snack & Dolci"
-    case casaPulizia = "Casa & Pulizia"
-    case curaPersona = "Cura Persona"
-    case animali = "Animali"
+    case surgelati = "Surgelati"
+    case dispensa = "Dispensa"
     case altro = "Altro"
     
-    var id: String { self.rawValue }
+    var id: String { rawValue }
+    
+    var color: Color {
+        switch self {
+        case .frutta: return .orange
+        case .verdura: return .green
+        case .carne: return .red
+        case .pesce: return .blue
+        case .latticini: return .mint
+        case .bevande: return .cyan
+        case .surgelati: return .indigo
+        case .dispensa: return .brown
+        case .altro: return .gray
+        }
+    }
 }

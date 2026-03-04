@@ -128,7 +128,9 @@ struct ShoppingListView: View {
     // MARK: - Card
     
     private func itemCard(for item: ShoppingItem) -> some View {
-        HStack(spacing: 16) {
+        let categoryColor = item.product.category.color
+        
+        return HStack(spacing: 16) {
             
             VStack(alignment: .leading, spacing: 6) {
                 
@@ -139,12 +141,13 @@ struct ShoppingListView: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
+                // Badge dinamico
                 Text(item.product.category.rawValue)
                     .font(.caption)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color.green.opacity(0.15))
-                    .foregroundColor(.green)
+                    .background(categoryColor.opacity(0.15))
+                    .foregroundColor(categoryColor)
                     .cornerRadius(8)
                 
                 if item.pricePerUnit > 0 {
