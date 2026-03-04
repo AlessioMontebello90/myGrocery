@@ -1,31 +1,28 @@
-//
-//  myGroceryApp.swift
-//  myGrocery
-//
-//  Created by ALESSIO MONTEBELLO on 04/03/26.
-//
-
 import SwiftUI
 import SwiftData
 
 @main
 struct myGroceryApp: App {
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Product.self,
+            ShoppingItem.self,
+            Purchase.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+        
+        let configuration = ModelConfiguration(schema: schema)
+        
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(for: schema, configurations: [configuration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            fatalError("Errore creazione ModelContainer: \(error)")
         }
     }()
-
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()
         }
         .modelContainer(sharedModelContainer)
     }
