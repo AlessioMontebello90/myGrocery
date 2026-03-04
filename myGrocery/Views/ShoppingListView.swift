@@ -7,33 +7,61 @@ struct ShoppingListView: View {
     @Query private var items: [ShoppingItem]
     
     @State private var showAddItem = false
+
+    private var totalAmount: Double {
+    items
+        .filter { $0.isPurchased }
+        .reduce(0) { $0 + $1.totalPrice }
+}
+
     
     var body: some View {
         NavigationStack {
             List {
-                ForEach(items) { item in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(item.product.name)
-                                .font(.headline)
-                            
-                            Text(quantityText(for: item))
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
-                        }
-                        
-                        Spacer()
-                        
-                        Button {
-                            item.isPurchased.toggle()
-                        } label: {
-                            Image(systemName: item.isPurchased ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(item.isPurchased ? .green : .gray)
-                        }
-                    }
+    ForEach(items) { item in
+        HStack {
+            VStack(alignment: .leading) {
+                Text(item.product.name)
+                    .font(.headline)
+                
+                Text(quantityText(for: item))
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                
+                if item.pricePerUnit > 0 {
+                    Text("€ \(item.totalPrice, specifier: "%.2f")")
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
                 }
-                .onDelete(perform: deleteItem)
             }
+            
+            Spacer()
+            
+            Button {
+                item.isPurchased.toggle()
+            } label: {
+                Image(systemName: item.isPurchased ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(item.isPurchased ? .green : .gray)
+                    .font(.title3)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+    .onDelete(perform: deleteItem)
+    
+    if totalAmount > 0 {
+        HStack {
+            Text("Totale")
+                .font(.headline)
+            Spacer()
+            Text("€ \(totalAmount, specifier: "%.2f")")
+                .font(.title3.bold())
+                .foregroundColor(.green)
+        }
+        .padding(.vertical, 8)
+    }
+}
+
             .navigationTitle("Lista Spesa")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
