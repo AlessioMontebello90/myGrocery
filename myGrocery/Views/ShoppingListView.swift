@@ -8,14 +8,20 @@ struct ShoppingListView: View {
     
     @Environment(\.modelContext) private var context
     
+    @State private var showingAddSheet = false
+    
     var body: some View {
         NavigationStack {
             List {
                 ForEach(items) { item in
                     HStack {
-                        VStack(alignment: .leading) {
+                        VStack(alignment: .leading, spacing: 4) {
                             Text(item.product.name)
                                 .font(.headline)
+                            
+                            Text(item.product.category.rawValue)
+                                .font(.caption)
+                                .foregroundColor(.gray)
                             
                             Text("Quantità: \(item.quantity)")
                                 .font(.subheadline)
@@ -37,20 +43,16 @@ struct ShoppingListView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        addSampleItem()
+                        showingAddSheet = true
                     } label: {
                         Image(systemName: "plus")
                     }
                 }
             }
+            .sheet(isPresented: $showingAddSheet) {
+                AddItemView()
+            }
         }
-    }
-    
-    private func addSampleItem() {
-        let product = Product(name: "Prodotto esempio", category: "Altro")
-        let item = ShoppingItem(product: product)
-        context.insert(product)
-        context.insert(item)
     }
     
     private func deleteItem(at offsets: IndexSet) {
