@@ -7,37 +7,78 @@ struct ShoppingListView: View {
     @Query private var items: [ShoppingItem]
     
     @State private var showAddItem = false
+    @State private var showPurchased = true
+    
+    private var notPurchasedItems: [ShoppingItem] {
+        items.filter { !$0.isPurchased }
+    }
+    
+    private var purchasedItems: [ShoppingItem] {
+        items.filter { $0.isPurchased }
+    }
     
     private var totalAmount: Double {
-        items
-            .filter { $0.isPurchased }
-            .reduce(0) { $0 + $1.totalPrice }
+        purchasedItems.reduce(0) { $0 + $1.totalPrice }
     }
     
     var body: some View {
         NavigationStack {
             ZStack {
                 
-              
                 Color(.systemGroupedBackground)
                     .ignoresSafeArea()
                 
-                VStack {
-                    
-                    if items.isEmpty {
-                        emptyState
-                    } else {
-                        ScrollView {
-                            VStack(spacing: 16) {
-                                ForEach(items) { item in
+                ScrollView {
+                    VStack(spacing: 24) {
+                        
+                        if items.isEmpty {
+                            emptyState
+                        } else {
+                            
+                            // MARK: - Da comprare
+                            
+                            if !notPurchasedItems.isEmpty {
+                                sectionHeader(title: "Da comprare", systemImage: "cart")
+                                
+                                ForEach(notPurchasedItems) { item in
                                     itemCard(for: item)
                                 }
                             }
-                            .padding()
+                            
+                            // MARK: - Acquistati
+                            
+                            if !purchasedItems.isEmpty {
+                                
+                                Button {
+                                    withAnimation {
+                                        showPurchased.toggle()
+                                    }
+                                } label: {
+                                    HStack {
+                                        Label("Acquistati", systemImage: "checkmark.circle")
+                                            .font(.headline)
+                                        
+                                        Spacer()
+                                        
+                                        Image(systemName: showPurchased ? "chevron.up" : "chevron.down")
+                                    }
+                                }
+                                .padding(.top, 8)
+                                
+                                if showPurchased {
+                                    ForEach(purchasedItems) { item in
+                                        itemCard(for: item)
+                                    }
+                                }
+                            }
+                            
+                            Spacer(minLength: 100)
                         }
                     }
+                    .padding()
                 }
                 
+                // MARK: - Totale fisso
                 
                 VStack {
                     Spacer()
@@ -74,7 +115,17 @@ struct ShoppingListView: View {
         }
     }
     
+    // MARK: - Sezione Header
     
+    private func sectionHeader(title: String, systemImage: String) -> some View {
+        HStack {
+            Label(title, systemImage: systemImage)
+                .font(.headline)
+            Spacer()
+        }
+    }
+    
+    // MARK: - Card
     
     private func itemCard(for item: ShoppingItem) -> some View {
         HStack(spacing: 16) {
@@ -88,12 +139,21 @@ struct ShoppingListView: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
+                Text(item.product.category.rawValue)
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.green.opacity(0.15))
+                    .foregroundColor(.green)
+                    .cornerRadius(8)
+                
                 if item.pricePerUnit > 0 {
                     Text("€ \(item.totalPrice, specifier: "%.2f")")
                         .font(.subheadline.bold())
                         .foregroundColor(.green)
                 }
             }
+            .opacity(item.isPurchased ? 0.5 : 1.0)
             
             Spacer()
             
@@ -115,7 +175,7 @@ struct ShoppingListView: View {
         .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
     }
     
-    
+    // MARK: - Empty State
     
     private var emptyState: some View {
         VStack(spacing: 12) {
@@ -133,13 +193,7 @@ struct ShoppingListView: View {
         .padding(.top, 80)
     }
     
-    
-    
-    private func deleteItem(at offsets: IndexSet) {
-        for index in offsets {
-            context.delete(items[index])
-        }
-    }
+    // MARK: - Helpers
     
     private func quantityText(for item: ShoppingItem) -> String {
         switch item.unit {
@@ -148,7 +202,7 @@ struct ShoppingListView: View {
         case .grams:
             return "Quantità: \(Int(item.quantity)) g"
         case .kilograms:
-            return "Quantità: \(String(format: "%.2f", item.quantity)) kg"
+            return "Quantità: \(String(format: "%.1f", item.quantity)) kg"
         }
     }
 }

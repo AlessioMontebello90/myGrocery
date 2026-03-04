@@ -9,6 +9,7 @@ struct AddItemView: View {
     @State private var name: String = ""
     @State private var quantity: Double = 1
     @State private var selectedUnit: UnitType = .pieces
+    @State private var selectedCategory: Category = .altro
     @State private var pricePerUnit: Double = 0
     
     var body: some View {
@@ -22,6 +23,7 @@ struct AddItemView: View {
                     VStack(spacing: 24) {
                         
                         productSection
+                        categorySection
                         quantitySection
                         priceSection
                         saveButton
@@ -46,6 +48,24 @@ struct AddItemView: View {
             TextField("Nome prodotto", text: $name)
                 .padding()
                 .background(cardBackground)
+        }
+    }
+    
+    private var categorySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            
+            Text("Categoria")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            Picker("Categoria", selection: $selectedCategory) {
+                ForEach(Category.allCases) { category in
+                    Text(category.rawValue).tag(category)
+                }
+            }
+            .pickerStyle(.menu)
+            .padding()
+            .background(cardBackground)
         }
     }
     
@@ -182,7 +202,7 @@ struct AddItemView: View {
     }
     
     private func saveItem() {
-        let product = Product(name: name, category: .altro)
+        let product = Product(name: name, category: selectedCategory)
         
         let newItem = ShoppingItem(
             product: product,
