@@ -7,61 +7,57 @@ struct ShoppingListView: View {
     @Query private var items: [ShoppingItem]
     
     @State private var showAddItem = false
-
+    
     private var totalAmount: Double {
-    items
-        .filter { $0.isPurchased }
-        .reduce(0) { $0 + $1.totalPrice }
-}
-
+        items
+            .filter { $0.isPurchased }
+            .reduce(0) { $0 + $1.totalPrice }
+    }
     
     var body: some View {
         NavigationStack {
-            List {
-    ForEach(items) { item in
-        HStack {
-            VStack(alignment: .leading) {
-                Text(item.product.name)
-                    .font(.headline)
+            ZStack {
                 
-                Text(quantityText(for: item))
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+              
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
                 
-                if item.pricePerUnit > 0 {
-                    Text("€ \(item.totalPrice, specifier: "%.2f")")
-                        .font(.subheadline)
-                        .foregroundColor(.blue)
+                VStack {
+                    
+                    if items.isEmpty {
+                        emptyState
+                    } else {
+                        ScrollView {
+                            VStack(spacing: 16) {
+                                ForEach(items) { item in
+                                    itemCard(for: item)
+                                }
+                            }
+                            .padding()
+                        }
+                    }
+                }
+                
+                
+                VStack {
+                    Spacer()
+                    
+                    if totalAmount > 0 {
+                        HStack {
+                            Text("Totale")
+                                .font(.headline)
+                            
+                            Spacer()
+                            
+                            Text("€ \(totalAmount, specifier: "%.2f")")
+                                .font(.title2.bold())
+                                .foregroundColor(.green)
+                        }
+                        .padding()
+                        .background(.ultraThinMaterial)
+                    }
                 }
             }
-            
-            Spacer()
-            
-            Button {
-                item.isPurchased.toggle()
-            } label: {
-                Image(systemName: item.isPurchased ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(item.isPurchased ? .green : .gray)
-                    .font(.title3)
-            }
-        }
-        .padding(.vertical, 4)
-    }
-    .onDelete(perform: deleteItem)
-    
-    if totalAmount > 0 {
-        HStack {
-            Text("Totale")
-                .font(.headline)
-            Spacer()
-            Text("€ \(totalAmount, specifier: "%.2f")")
-                .font(.title3.bold())
-                .foregroundColor(.green)
-        }
-        .padding(.vertical, 8)
-    }
-}
-
             .navigationTitle("Lista Spesa")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -77,6 +73,67 @@ struct ShoppingListView: View {
             }
         }
     }
+    
+    
+    
+    private func itemCard(for item: ShoppingItem) -> some View {
+        HStack(spacing: 16) {
+            
+            VStack(alignment: .leading, spacing: 6) {
+                
+                Text(item.product.name)
+                    .font(.headline)
+                
+                Text(quantityText(for: item))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                if item.pricePerUnit > 0 {
+                    Text("€ \(item.totalPrice, specifier: "%.2f")")
+                        .font(.subheadline.bold())
+                        .foregroundColor(.green)
+                }
+            }
+            
+            Spacer()
+            
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    item.isPurchased.toggle()
+                }
+            } label: {
+                Image(systemName: item.isPurchased ? "checkmark.circle.fill" : "circle")
+                    .font(.title2)
+                    .foregroundColor(item.isPurchased ? .green : .gray)
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 18)
+                .fill(Color(.systemBackground))
+        )
+        .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
+    }
+    
+    
+    
+    private var emptyState: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "cart")
+                .font(.largeTitle)
+                .foregroundColor(.gray.opacity(0.4))
+            
+            Text("Nessun prodotto")
+                .foregroundColor(.secondary)
+            
+            Text("Aggiungi il primo articolo")
+                .font(.caption)
+                .foregroundColor(.gray)
+        }
+        .padding(.top, 80)
+    }
+    
+    
     
     private func deleteItem(at offsets: IndexSet) {
         for index in offsets {
