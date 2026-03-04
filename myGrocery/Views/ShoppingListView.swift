@@ -3,53 +3,48 @@ import SwiftData
 
 struct ShoppingListView: View {
     
-    @Query
-    private var items: [ShoppingItem]
-    
     @Environment(\.modelContext) private var context
+    @Query private var items: [ShoppingItem]
     
-    @State private var showingAddSheet = false
+    @State private var showAddItem = false
     
     var body: some View {
         NavigationStack {
             List {
                 ForEach(items) { item in
                     HStack {
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading) {
                             Text(item.product.name)
                                 .font(.headline)
                             
-                            Text(item.product.category.rawValue)
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                            
-                            Text("Quantità: \(item.quantity)")
+                            Text(quantityText(for: item))
                                 .font(.subheadline)
                                 .foregroundColor(.gray)
                         }
                         
                         Spacer()
                         
-                        Image(systemName: item.isPurchased ? "checkmark.circle.fill" : "circle")
-                            .foregroundColor(item.isPurchased ? .green : .gray)
-                            .onTapGesture {
-                                item.isPurchased.toggle()
-                            }
+                        Button {
+                            item.isPurchased.toggle()
+                        } label: {
+                            Image(systemName: item.isPurchased ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(item.isPurchased ? .green : .gray)
+                        }
                     }
                 }
                 .onDelete(perform: deleteItem)
             }
-            .navigationTitle("myGougery")
+            .navigationTitle("Lista Spesa")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        showingAddSheet = true
+                        showAddItem = true
                     } label: {
                         Image(systemName: "plus")
                     }
                 }
             }
-            .sheet(isPresented: $showingAddSheet) {
+            .sheet(isPresented: $showAddItem) {
                 AddItemView()
             }
         }
@@ -58,6 +53,17 @@ struct ShoppingListView: View {
     private func deleteItem(at offsets: IndexSet) {
         for index in offsets {
             context.delete(items[index])
+        }
+    }
+    
+    private func quantityText(for item: ShoppingItem) -> String {
+        switch item.unit {
+        case .pieces:
+            return "Quantità: \(Int(item.quantity)) pz"
+        case .grams:
+            return "Quantità: \(Int(item.quantity)) g"
+        case .kilograms:
+            return "Quantità: \(String(format: "%.2f", item.quantity)) kg"
         }
     }
 }
